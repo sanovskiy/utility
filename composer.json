@@ -1,0 +1,21 @@
+{
+  "name": "sanovskiy/utility",
+  "description": "Some utility classes for projects",
+  "type": "library",
+  "license": "Apache-2.0",
+  "authors": [
+    {
+      "name": "Pavel Terentyev",
+      "email": "pavel.terentyev@gmail.com"
+    }
+  ],
+  "require": {
+    "php": "^7.2",
+    "sanovskiy/traitlib": "^1.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Sanovskiy\\Utility\\": "src"
+    }
+  }
+}
