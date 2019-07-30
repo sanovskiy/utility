@@ -22,11 +22,8 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
      */
     public static function fromArray(array $arr)
     {
-        $obj = new self;
+        $obj = new static;
         foreach ($arr as $key => $val) {
-            if ($val instanceof Repository) {
-                $val = $val->toArray();
-            }
             $obj->{$key} = $val;
         }
         return $obj;
@@ -85,7 +82,16 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
      */
     public function toArray()
     {
-        return $this->records;
+        $result = [];
+        foreach ($this->records as $key => $val) {
+            if ($val instanceof self) {
+                $val = $val->toArray();
+            }
+            $result[$key] = $val;
+
+        }
+
+        return $result;
     }
 
     /**
