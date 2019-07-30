@@ -24,6 +24,9 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
     {
         $obj = new self;
         foreach ($arr as $key => $val) {
+            if ($val instanceof Repository) {
+                $val = $val->toArray();
+            }
             $obj->{$key} = $val;
         }
         return $obj;
