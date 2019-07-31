@@ -41,4 +41,32 @@ class Strings
         return implode('', $arr);
     }
 
+    /**
+     * @param int $num - number
+     * @param string $gen - for (шту)к
+     * @param string $plu - for (шту)ки
+     * @param string $sin - for (шту)ка
+     * @return string
+     */
+    public static function numberCondition(int $num, string $gen, string $plu, string $sin)
+    {
+        if (substr((string)$num, -1, 1) === '1' &&
+            (
+                strlen((string)$num) < 2 ||
+                substr((string)$num, -2, 1) !== '1'
+            )
+        ) {
+            return $sin;
+        }
+        if (
+            in_array(substr((string)$num, -1, 1), ['2', '3', '4'], true) &&
+            (
+                strlen((string)$num) < 2 ||
+                substr((string)$num, -2, 1) !== '1'
+            )
+        ) {
+            return $plu;
+        }
+        return $gen;
+    }
 }
