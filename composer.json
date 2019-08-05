@@ -11,7 +11,8 @@
   ],
   "require": {
     "php": "^7.2",
-    "sanovskiy/traitlib": "^1.1"
+    "sanovskiy/traitlib": ">=1.1 <2.0.0",
+    "monolog/monolog": ">=1.24 <2.0.0"
   },
   "autoload": {
     "psr-4": {
