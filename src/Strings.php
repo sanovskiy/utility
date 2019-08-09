@@ -69,4 +69,24 @@ class Strings
         }
         return $gen;
     }
+
+    /**
+     * @param string $str
+     * @param string $from
+     * @param string $to
+     * @return string|array
+     */
+    public static function mb_strtr(string $str, string $from, string $to)
+    {
+        return str_replace(self::mb_str_split($from), self::mb_str_split($to), $str);
+    }
+
+    /**
+     * @param string $str
+     * @return array[]|false|string[]
+     */
+    public static function mb_str_split(string $str)
+    {
+        return preg_split('//u', $str, null, PREG_SPLIT_NO_EMPTY);
+    }
 }
