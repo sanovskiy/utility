@@ -1,5 +1,7 @@
 <?php namespace Sanovskiy\Utility;
 
+use JetBrains\PhpStorm\Pure;
+
 /**
  * Class String
  * @package App\Components\Utils;
@@ -10,17 +12,16 @@ class Strings
      * @param string $string
      * @return bool
      */
-    public static function isURL(string $string): bool
+    #[Pure] public static function isURL(string $string): bool
     {
         return (boolean)filter_var($string, FILTER_VALIDATE_URL);
     }
 
     /**
      * @param string[] $pathParts
-     *
      * @return string
      */
-    public static function makePath(array $pathParts): string
+    #[Pure] public static function makePath(array $pathParts): string
     {
         return implode(DIRECTORY_SEPARATOR, $pathParts);
     }
@@ -32,9 +33,7 @@ class Strings
      */
     public static function CamelCase(string $string, bool $firstLetterCaps = true): string
     {
-        $string = preg_replace('/[_-]/', '_', $string);
-        $arr = explode('_', $string);
-        $arr = array_map('ucfirst', $arr);
+        $arr = array_map('ucfirst', explode('_', preg_replace('/[_-]/', '_', $string)));
         if (!$firstLetterCaps) {
             $arr[0] = strtolower($arr[0]);
         }
@@ -48,7 +47,7 @@ class Strings
      * @param string $sin - for (шту)ка
      * @return string
      */
-    public static function numberCondition(int $num, string $gen, string $plu, string $sin)
+    #[Pure] public static function numberCondition(int $num, string $gen, string $plu, string $sin): string
     {
         if (substr((string)$num, -1, 1) === '1' &&
             (
@@ -74,18 +73,18 @@ class Strings
      * @param string $str
      * @param string $from
      * @param string $to
-     * @return string|array
+     * @return string|string[]
      */
-    public static function mb_strtr(string $str, string $from, string $to)
+    public static function mb_strtr(string $str, string $from, string $to): array|string
     {
         return str_replace(self::mb_str_split($from), self::mb_str_split($to), $str);
     }
 
     /**
      * @param string $str
-     * @return array[]|false|string[]
+     * @return array|bool
      */
-    public static function mb_str_split(string $str)
+    #[Pure] public static function mb_str_split(string $str): array|bool
     {
         return preg_split('//u', $str, null, PREG_SPLIT_NO_EMPTY);
     }

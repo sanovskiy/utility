@@ -1,6 +1,7 @@
 <?php namespace Sanovskiy\Utility;
 
 use Monolog\Logger;
+use Sanovskiy\Interfaces\Patterns\Singleton;
 
 /**
  * Class DeprecationMonitor
@@ -9,42 +10,28 @@ use Monolog\Logger;
  * @method void reportClass($message = '')
  * @method void reportMethod($message = '')
  */
-class DeprecationMonitor
+class DeprecationMonitor implements Singleton
 {
+    use \Sanovskiy\Traits\Patterns\Singleton;
 
-    protected static $instance;
     /**
-     * @var Logger
+     * @var ?Logger
      */
-    protected $logger = null;
+    protected ?Logger $logger = null;
+
     /**
      * @var array
      */
-    protected $registry = [];
-    protected $replaceStringsInCallers = [];
+    protected array $registry = [];
 
     /**
-     * DeprecationMonitor constructor.
+     * @var array
      */
-    protected function __construct()
-    {
-    }
-
-    /**
-     * @return DeprecationMonitor
-     */
-    public static function getInstance(): DeprecationMonitor
-    {
-        if (!(self::$instance instanceof self)) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
-    }
+    protected array $replaceStringsInCallers = [];
 
     /**
      * @param Logger $logger
-     * @return $this
+     * @return self
      */
     public function setLogger(Logger $logger): self
     {
@@ -53,11 +40,11 @@ class DeprecationMonitor
     }
 
     /**
-     * @param $string
-     * @param $replacement
+     * @param string $string
+     * @param string $replacement
      * @return $this
      */
-    public function registerCallerReplacement($string, $replacement): self
+    public function registerCallerReplacement(string $string, string $replacement): self
     {
         $this->replaceStringsInCallers[$string] = $replacement;
         return $this;
@@ -68,17 +55,16 @@ class DeprecationMonitor
         $caller = debug_backtrace()[1];
         $message = $arguments[0] ?? '';
         switch ($name) {
-            default:
-                return;
             case 'reportClass':
-                $this->report('Class ' . $caller['class'], $caller['file'] . ':' . $caller['line'], $message);
+                $this->report(sprintf("Class %s", $caller['class']), sprintf("%s:%s", $caller['file'], $caller['line']), $message);
                 break;
             case 'reportMethod':
-                $this->report('Method ' . $caller['class'] . '::' . $caller['function'], $caller['file'] . ':' . $caller['line'], $message);
+                $this->report(sprintf("Method %s::%s", $caller['class'], $caller['function']), sprintf("%s:%s", $caller['file'], $caller['line']), $message);
                 break;
             case 'reportFunction':
-                $this->report('Function ' . $caller['function'], $caller['file'] . ':' . $caller['line'], $message);
+                $this->report(sprintf("Function %s", $caller['function']), sprintf("%s:%s", $caller['file'], $caller['line']), $message);
                 break;
+            default:
         }
     }
 
@@ -114,7 +100,7 @@ class DeprecationMonitor
 
     /**
      * @param string $key
-     * @param string $caller
+     * @param array $caller
      */
     protected function sendToLogs(string $key, array $caller): void
     {
@@ -134,5 +120,4 @@ class DeprecationMonitor
             }
         }
     }
-
 }
