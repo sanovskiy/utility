@@ -17,23 +17,23 @@ class DeprecationMonitor implements Singleton
     /**
      * @var ?Logger
      */
-    protected ?Logger $logger = null;
+    protected $logger = null;
 
     /**
      * @var array
      */
-    protected array $registry = [];
+    protected $registry = [];
 
     /**
      * @var array
      */
-    protected array $replaceStringsInCallers = [];
+    protected $replaceStringsInCallers = [];
 
     /**
      * @param Logger $logger
      * @return self
      */
-    public function setLogger(Logger $logger): self
+    public function setLogger(Logger $logger)
     {
         $this->logger = $logger;
         return $this;
@@ -44,7 +44,7 @@ class DeprecationMonitor implements Singleton
      * @param string $replacement
      * @return $this
      */
-    public function registerCallerReplacement(string $string, string $replacement): self
+    public function registerCallerReplacement($string, $replacement)
     {
         $this->replaceStringsInCallers[$string] = $replacement;
         return $this;
@@ -53,7 +53,7 @@ class DeprecationMonitor implements Singleton
     public function __call($name, $arguments)
     {
         $caller = debug_backtrace()[1];
-        $message = $arguments[0] ?? '';
+        $message = $arguments[0] ? $arguments[0] : '';
         switch ($name) {
             case 'reportClass':
                 $this->report(sprintf("Class %s", $caller['class']), sprintf("%s:%s", $caller['file'], $caller['line']), $message);
@@ -73,7 +73,7 @@ class DeprecationMonitor implements Singleton
      * @param string $caller
      * @param string $message
      */
-    protected function report(string $key, string $caller, string $message = ''): void
+    protected function report($key, $caller, $message = '')
     {
         if (!array_key_exists($key, $this->registry)) {
             $this->registry[$key] = [
@@ -102,7 +102,7 @@ class DeprecationMonitor implements Singleton
      * @param string $key
      * @param array $caller
      */
-    protected function sendToLogs(string $key, array $caller): void
+    protected function sendToLogs($key, array $caller)
     {
         if (!$this->logger instanceof Logger) {
             return;

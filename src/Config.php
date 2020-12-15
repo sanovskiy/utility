@@ -24,7 +24,7 @@ class Config extends Repository
      * @param string $env
      * @return mixed
      */
-    public static function loadConfigArray(string $pathToConfigs, string $env): mixed
+    public static function loadConfigArray($pathToConfigs, $env)
     {
         if (!file_exists($pathToConfigs) || !is_dir($pathToConfigs)) {
             throw new RuntimeException(sprintf("%s is not a real directory", $pathToConfigs));
@@ -33,7 +33,10 @@ class Config extends Repository
         if (!file_exists($filename) || !is_readable($filename)) {
             throw new RuntimeException(sprintf("No config found for %s", $env));
         }
-        $config = include $filename;
+        /** @noinspection PhpIncludeInspection */
+        if (!($config = include $filename)) {
+            throw new RuntimeException(sprintf('File %s not found', $filename));
+        }
         if (isset($config['parent_env'])) {
             $config = self::mergeArray(self::loadConfigArray($pathToConfigs, $config['parent_env']), $config);
             unset($config['parent_env']);
@@ -46,7 +49,7 @@ class Config extends Repository
      * @param mixed $arrayToMerge
      * @return array
      */
-    public static function mergeArray(mixed $arrayOriginal, mixed $arrayToMerge): array
+    public static function mergeArray($arrayOriginal, $arrayToMerge)
     {
         $arrayResult = $arrayOriginal;
         foreach ($arrayToMerge as $key => $value) {

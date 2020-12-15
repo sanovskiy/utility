@@ -10,8 +10,8 @@
     }
   ],
   "require": {
-    "php": "^8.0",
-    "sanovskiy/traitlib": "^2.0",
+    "php": "^5.6",
+    "sanovskiy/traitlib": "^0.5.6",
     "monolog/monolog": "*"
   },
   "autoload": {
