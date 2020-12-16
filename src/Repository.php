@@ -18,12 +18,6 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
     protected array $records = [];
 
     /**
-     * @var string
-     * @deprecated
-     */
-    protected string $layout;
-
-    /**
      * @param array $arr
      * @return Repository
      */
@@ -99,23 +93,5 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
         }
 
         return $result;
-    }
-
-    /**
-     * @return string
-     * @deprecated
-     */
-    public function getLayout(): string
-    {
-        return $this->layout;
-    }
-
-    /**
-     * @param string $layout
-     * @deprecated
-     */
-    public function setLayout(string $layout)
-    {
-        $this->layout = $layout;
     }
 }
