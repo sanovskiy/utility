@@ -30,7 +30,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
     public function __construct(array $data)
     {
         foreach ($data as $key => $val) {
-            $this->records['$key'] = $val;
+            $this->records[$key] = $val;
         }
         $this->init();
     }
