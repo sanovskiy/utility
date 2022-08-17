@@ -1,30 +1,26 @@
-<?php namespace Sanovskiy\Utility;
+<?php
+namespace Sanovskiy\Utility;
 
 use RuntimeException;
 
 class Config extends Repository
 {
-    /**
-     * Core_Config constructor.
-     * @param $config
-     */
-    public function __construct($config)
+    protected function init()
     {
-        foreach ($config as $key => $item) {
+        foreach ($this->records as $key => $item) {
             if (is_array($item)) {
-                $this->records[$key] = new self($item);
-                continue;
+                $this->records[$key] = new static($item);
             }
-            $this->records[$key] = $item;
         }
     }
+
 
     /**
      * @param string $pathToConfigs
      * @param string $env
-     * @return mixed
+     * @return array
      */
-    public static function loadConfigArray(string $pathToConfigs, string $env): mixed
+    public static function loadConfigArray(string $pathToConfigs, string $env): array
     {
         if (!file_exists($pathToConfigs) || !is_dir($pathToConfigs)) {
             throw new RuntimeException(sprintf("%s is not a real directory", $pathToConfigs));
@@ -35,7 +31,7 @@ class Config extends Repository
         }
         $config = include $filename;
         if (isset($config['parent_env'])) {
-            $config = self::mergeArray(self::loadConfigArray($pathToConfigs, $config['parent_env']), $config);
+            $config = Arrays::smartMerge(self::loadConfigArray($pathToConfigs, $config['parent_env']), $config);
             unset($config['parent_env']);
         }
         return $config;
@@ -45,21 +41,10 @@ class Config extends Repository
      * @param mixed $arrayOriginal
      * @param mixed $arrayToMerge
      * @return array
+     * @deprecated Use Arrays::smartMerge()
      */
     public static function mergeArray(mixed $arrayOriginal, mixed $arrayToMerge): array
     {
-        $arrayResult = $arrayOriginal;
-        foreach ($arrayToMerge as $key => $value) {
-            if (!array_key_exists($key, $arrayResult)) {
-                $arrayResult[$key] = $value;
-                continue;
-            }
-            if (is_array($value) && is_array($arrayResult[$key])) {
-                $arrayResult[$key] = self::mergeArray($arrayResult[$key], $value);
-                continue;
-            }
-            $arrayResult[$key] = $value;
-        }
-        return $arrayResult;
+        return Arrays::smartMerge($arrayOriginal,$arrayToMerge);
     }
 }

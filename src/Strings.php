@@ -1,4 +1,6 @@
-<?php namespace Sanovskiy\Utility;
+<?php
+
+namespace Sanovskiy\Utility;
 
 use JetBrains\PhpStorm\Pure;
 
@@ -49,24 +51,36 @@ class Strings
      */
     #[Pure] public static function numberCondition(int $num, string $gen, string $plu, string $sin): string
     {
-        if (substr((string)$num, -1, 1) === '1' &&
-            (
-                strlen((string)$num) < 2 ||
-                substr((string)$num, -2, 1) !== '1'
-            )
-        ) {
+        if (self::strEndsWith((string)$num, '1') && (strlen((string)$num) < 2 || substr((string)$num, -2, 1) !== '1')) {
             return $sin;
         }
-        if (
-            in_array(substr((string)$num, -1, 1), ['2', '3', '4'], true) &&
-            (
-                strlen((string)$num) < 2 ||
-                substr((string)$num, -2, 1) !== '1'
-            )
-        ) {
+
+        if (self::strEndsWith((string)$num, ['2', '3', '4']) && (strlen((string)$num) < 2 || substr(
+                    (string)$num,
+                    -2,
+                    1
+                ) !== '1')) {
             return $plu;
         }
         return $gen;
+    }
+
+    /**
+     * @param string $haystack
+     * @param string|array $needles
+     * @return bool
+     */
+    public static function strEndsWith(string $haystack, string|array $needles): bool
+    {
+        if (!is_array($needles)) {
+            $needles = [$needles];
+        }
+        foreach ($needles as $needle) {
+            if (str_ends_with($haystack, $needle)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
