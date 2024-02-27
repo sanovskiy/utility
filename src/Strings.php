@@ -30,6 +30,7 @@ class Strings
      * @param string $string
      * @param bool $firstLetterCaps
      * @return string
+     * @deprecated Use NamingStyle::toCamelCase() instead
      */
     public static function CamelCase(string $string, bool $firstLetterCaps = true): string
     {
@@ -42,31 +43,22 @@ class Strings
 
     /**
      * @param int $num - number
-     * @param string $gen - for (шту)к
-     * @param string $plu - for (шту)ки
-     * @param string $sin - for (шту)ка
+     * @param string $genitive - for (шту)к
+     * @param string $plural - for (шту)ки
+     * @param string $singular - for (шту)ка
      * @return string
      */
-    #[Pure] public static function numberCondition(int $num, string $gen, string $plu, string $sin): string
+    public static function numberCondition(int $num, string $genitive, string $plural, string $singular): string
     {
-        if (substr((string)$num, -1, 1) === '1' &&
-            (
-                strlen((string)$num) < 2 ||
-                substr((string)$num, -2, 1) !== '1'
-            )
-        ) {
-            return $sin;
+        if (($num % 100) > 10 && ($num % 100) < 20) {
+            return $genitive;
         }
-        if (
-            in_array(substr((string)$num, -1, 1), ['2', '3', '4'], true) &&
-            (
-                strlen((string)$num) < 2 ||
-                substr((string)$num, -2, 1) !== '1'
-            )
-        ) {
-            return $plu;
-        }
-        return $gen;
+
+        return match ($num % 10) {
+            1 => $singular,
+            2, 3, 4 => $plural,
+            default => $genitive,
+        };
     }
 
     /**
