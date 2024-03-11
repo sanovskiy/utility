@@ -18,23 +18,25 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
     protected array $records = [];
 
     /**
-     * @var string
-     * @deprecated
+     * @param array $data
+     * @return static
+     * @deprecated Use new Repository($data)
      */
-    protected string $layout;
-
-    /**
-     * @param array $arr
-     * @return Repository
-     */
-    public static function fromArray(array $arr): Repository
+    public static function fromArray(array $data): static
     {
-        $obj = new static;
-        foreach ($arr as $key => $val) {
-            $obj->{$key} = $val;
-        }
-        return $obj;
+        return new static($data);
     }
+
+    public function __construct(array $data)
+    {
+        foreach ($data as $key => $val) {
+            $this->records[$key] = $val;
+        }
+        $this->init();
+    }
+
+
+    protected function init(){}
 
     /**
      * @param string $key
@@ -49,7 +51,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
      * @param string|int $name
      * @return mixed
      */
-    function __get(string|int $name): mixed
+    public function __get(string|int $name): mixed
     {
         if (!isset($this->records[$name])) {
             return null;
@@ -62,7 +64,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
      * @param mixed $value
      * @return void
      */
-    function __set(int|string $name, mixed $value)
+    public function __set(int|string $name, mixed $value)
     {
         $this->records[$name] = $value;
     }
@@ -71,7 +73,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
      * @param string|int $name
      * @return bool
      */
-    #[Pure] function __isset(string|int $name): bool
+    #[Pure] public function __isset(string|int $name): bool
     {
         return array_key_exists($name, $this->records);
     }
@@ -79,7 +81,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
     /**
      * @return array
      */
-    function __debugInfo(): array
+    public function __debugInfo(): array
     {
         return $this->records;
     }
@@ -95,27 +97,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
                 $val = $val->toArray();
             }
             $result[$key] = $val;
-
         }
-
         return $result;
-    }
-
-    /**
-     * @return string
-     * @deprecated
-     */
-    public function getLayout(): string
-    {
-        return $this->layout;
-    }
-
-    /**
-     * @param string $layout
-     * @deprecated
-     */
-    public function setLayout(string $layout)
-    {
-        $this->layout = $layout;
     }
 }
