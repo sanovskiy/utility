@@ -80,4 +80,25 @@ class Strings
     {
         return preg_split('//u', $str, null, PREG_SPLIT_NO_EMPTY);
     }
+
+    /**
+     * @param ...$strings
+     * @return array
+     */
+    public static function removeCommonPrefix(...$strings): array
+    {
+        $commonPrefix = array_reduce($strings, function ($prefix, $str) {
+            $length = min(strlen($prefix), strlen($str));
+            for ($i = 0; $i < $length; $i++) {
+                if ($prefix[$i] !== $str[$i]) {
+                    return substr($prefix, 0, $i);
+                }
+            }
+            return substr($prefix, 0, $length);
+        }, $strings[0]);
+
+        return array_map(function ($str) use ($commonPrefix) {
+            return substr($str, strlen($commonPrefix));
+        }, $strings);
+    }
 }
