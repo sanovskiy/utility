@@ -93,7 +93,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
     {
         $result = [];
         foreach ($this->records as $key => $val) {
-            if ($val instanceof self) {
+            if ($val instanceof static) {
                 $val = $val->toArray();
             }
             $result[$key] = $val;
