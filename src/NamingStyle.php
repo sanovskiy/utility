@@ -6,22 +6,22 @@ class NamingStyle
 {
     public static function isUpperCamelCase(string $str): bool
     {
-        return preg_match('/^[A-Z][a-zA-Z]*$/', $str) === 1;
+        return preg_match('/^[A-Z][a-zA-Z\d]*$/', $str) === 1;
     }
 
     public static function isLowerCamelCase(string $str): bool
     {
-        return preg_match('/^[a-z]*[A-Z][a-zA-Z]*$/', $str) === 1;
+        return preg_match('/^[a-z]*[A-Z][a-zA-Z\d]*$/', $str) === 1;
     }
 
     public static function isSnakeCase(string $str): bool
     {
-        return preg_match('/^[a-z]+(_[a-z]+)*$/', $str) === 1;
+        return preg_match('/^[a-z\d]+(_[a-z\d]+)*$/', $str) === 1;
     }
 
     public static function isScreamingSnakeCase(string $str): bool
     {
-        return preg_match('/^[A-Z]+(_[A-Z]+)*$/', $str) === 1;
+        return preg_match('/^[A-Z\d]+(_[A-Z\d]+)*$/', $str) === 1;
     }
 
     public static function toSnakeCase(string $str): string
