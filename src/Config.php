@@ -5,7 +5,7 @@ use RuntimeException;
 
 class Config extends Repository
 {
-    protected function init()
+    protected function init(): void
     {
         foreach ($this->records as $key => $item) {
             if (is_array($item)) {

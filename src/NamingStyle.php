@@ -26,10 +26,11 @@ class NamingStyle
 
     public static function toSnakeCase(string $str): string
     {
-        if (!self::isUpperCamelCase($str) && !self::isLowerCamelCase($str)){
+        if (!self::isUpperCamelCase($str) && !self::isLowerCamelCase($str)) {
             return $str;
         }
-        return strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $str));
+        $str = preg_replace('/(?<!^)([A-Z]|\d+|[A-Z][a-z]+)/', '_$0', $str);
+        return strtolower($str);
     }
 
     public static function toCamelCase(string $str, bool $capitalizeFirstCharacter = false): string

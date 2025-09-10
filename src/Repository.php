@@ -1,173 +1,266 @@
-<?php namespace Sanovskiy\Utility;
+<?php
+
+declare(strict_types=1);
+
+namespace Sanovskiy\Utility;
 
 use JetBrains\PhpStorm\Pure;
-use Sanovskiy\Traits\ArrayAccess;
-use Sanovskiy\Traits\Countable;
-use Sanovskiy\Traits\Iterator;
 
 /**
  * Class Repository
- * @package App\Components\Core;
+ * @package Sanovskiy\Utility
  */
 class Repository implements \ArrayAccess, \Iterator, \Countable
 {
-    use Iterator;
-    use Countable;
-    use ArrayAccess;
+    use \Sanovskiy\Traits\Iterator;
+    use \Sanovskiy\Traits\Countable;
 
     protected array $records = [];
 
     /**
-     * @param array $data
-     * @return static
-     * @deprecated Use new Repository($data)
+     * Constructor initializes the repository with an array of data.
+     *
+     * @param array $data Initial data
      */
-    public static function fromArray(array $data): static
+    public function __construct(array $data = [])
     {
-        return new static($data);
-    }
-
-    public function __construct(array $data)
-    {
-        foreach ($data as $key => $val) {
-            $this->records[$key] = $val;
-        }
+        $this->records = $data;
         $this->init();
     }
 
-
-    protected function init(){}
+    /**
+     * Initialize the repository (hook for subclasses).
+     */
+    protected function init(): void
+    {
+    }
 
     /**
-     * @param string $key
+     * Wrap a value in a Repository instance if it’s an array.
+     *
+     * @param mixed $value Value to process
+     * @return mixed Processed value
+     */
+    protected function wrapValue(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            return new self($value);
+        }
+        return $value;
+    }
+
+    /**
+     * Check if a key exists using dot notation.
+     *
+     * @param string|int $key Key to check
      * @return bool
      */
-    #[Pure] public function keyExists(string $key): bool
+    #[Pure]
+    public function has(string|int $key): bool
     {
+        if ($key === '') {
+            return array_key_exists('', $this->records);
+        }
+
+        // Try dot notation if the key is a string and contains a dot
+        if (is_string($key) && str_contains($key, '.')) {
+            $keys = explode('.', $key);
+            $current = $this->records;
+
+            foreach ($keys as $index => $k) {
+                if ($current instanceof self) {
+                    return $current->has(implode('.', array_slice($keys, $index)));
+                }
+                if (!is_array($current) || !array_key_exists($k, $current)) {
+                    return false;
+                }
+                $current = $current[$k];
+            }
+
+            return true;
+        }
+
+        // Fallback to literal key (int or string)
         return array_key_exists($key, $this->records);
     }
 
     /**
-     * Check if an item exists in the repository using dot notation.
+     * Get a value using dot notation.
      *
-     * @param string $key
-     * @return bool
-     */
-    public function has(string $key): bool
-    {
-        $array = $this->records;
-
-        if (array_key_exists($key, $array)) {
-            return true;
-        }
-
-        if (!str_contains($key, '.')) {
-            return false;
-        }
-
-        foreach (explode('.', $key) as $segment) {
-            if (is_array($array) && array_key_exists($segment, $array)) {
-                $array = $array[$segment];
-            } else {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Get an item from the repository using dot notation.
-     *
-     * @param string $key
-     * @param mixed $default
+     * @param string|int $key Key to retrieve
+     * @param mixed $default Default value if key not found
+     * @param bool $useLiteralKey Whether to treat the key as literal (no dot notation)
      * @return mixed
      */
-    public function get(string $key, mixed $default = null): mixed
+    public function get(string|int $key, mixed $default = null, bool $useLiteralKey = false): mixed
     {
-        $array = $this->records;
-
-        if (array_key_exists($key, $array)) {
-            return $array[$key];
+        if ($key === '') {
+            return $this->has('') ? $this->records[''] : $default;
         }
 
-        if (!str_contains($key, '.')) {
-            return $default;
+        // Use literal key if explicitly requested
+        if ($useLiteralKey && $this->has($key)) {
+            return $this->records[$key];
         }
 
-        foreach (explode('.', $key) as $segment) {
-            if (is_array($array) && array_key_exists($segment, $array)) {
-                $array = $array[$segment];
-            } else {
-                return $default;
+        // Try dot notation if the key is a string and contains a dot
+        if (is_string($key) && str_contains($key, '.')) {
+            $keys = explode('.', $key);
+            $current = $this->records;
+
+            foreach ($keys as $index => $k) {
+                if ($current instanceof self) {
+                    return $current->get(implode('.', array_slice($keys, $index)), $default);
+                }
+                if (!is_array($current) || !array_key_exists($k, $current)) {
+                    return $default;
+                }
+                $current = $current[$k];
             }
+
+            return $current;
         }
 
-        return $array;
+        // Fallback to literal key (int or string)
+        return $this->has($key) ? $this->records[$key] : $default;
     }
 
     /**
-     * Set an item in the repository using dot notation.
+     * Set a value using dot notation.
      *
-     * @param string $key
-     * @param mixed $value
+     * @param string|int $key Key to set
+     * @param mixed $value Value to set
      * @return void
      */
-    public function set(string $key, mixed $value): void
+    public function set(string|int $key, mixed $value): void
     {
-        $array = &$this->records;
-        $keys = explode('.', $key);
-        $lastKey = array_pop($keys);
-
-        foreach ($keys as $k) {
-            if (!isset($array[$k]) || !is_array($array[$k])) {
-                $array[$k] = [];
-            }
-            $array = &$array[$k];
+        if ($key === '') {
+            $this->records[''] = $value;
+            return;
         }
 
-        $array[$lastKey] = $value;
+        // Use literal key if not a string or no dots
+        if (!is_string($key) || !str_contains($key, '.')) {
+            $this->records[$key] = $value;
+            return;
+        }
+
+        $keys = explode('.', $key);
+        $lastKey = array_pop($keys);
+        $current = &$this->records;
+
+        foreach ($keys as $index => $k) {
+            if (!isset($current[$k])) {
+                $current[$k] = new static([]);
+            } elseif ($current[$k] instanceof self) {
+                $remainingKeys = array_slice($keys, $index + 1);
+                $remainingKeys[] = $lastKey;
+                $current[$k]->set(implode('.', $remainingKeys), $value);
+                return;
+            }
+            if (!isset($current[$k]) || !is_array($current[$k])) {
+                $current[$k] = [];
+            }
+            $current = &$current[$k];
+        }
+
+        $current[$lastKey] = $value;
     }
 
     /**
-     * @param string|int $name
+     * Magic getter for property access.
+     *
+     * @param string|int $name Property name
      * @return mixed
      */
     public function __get(string|int $name): mixed
     {
-        if (str_contains($name, '.')) {
-            return $this->get($name);
+        if ($this->has($name)) {
+            return $this->wrapValue($this->records[$name]);
         }
-
-        return $this->records[$name] ?? null;
+        return $this->get($name);
     }
 
     /**
-     * @param string|int $name
+     * ArrayAccess: Get a value by offset.
+     *
+     * @param mixed $offset
+     * @return mixed
+     */
+    public function offsetGet(mixed $offset): mixed
+    {
+        if ($this->has($offset)) {
+            return $this->wrapValue($this->records[$offset]);
+        }
+        return $this->get($offset);
+    }
+
+    /**
+     * ArrayAccess: Set a value by offset.
+     *
+     * @param mixed $offset
      * @param mixed $value
      * @return void
      */
-    public function __set(int|string $name, mixed $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (str_contains($name, '.')) {
-            $this->set($name, $value);
-            return;
-        }
-
-        $this->records[$name] = $value;
+        $this->set($offset, $value);
     }
 
     /**
-     * @param string|int $name
+     * ArrayAccess: Check if an offset exists.
+     *
+     * @param mixed $offset
      * @return bool
      */
-    #[Pure] public function __isset(string|int $name): bool
+    public function offsetExists(mixed $offset): bool
     {
-        return array_key_exists($name, $this->records);
+        return $this->has($offset);
     }
 
     /**
-     * Get all keys from the repository.
+     * ArrayAccess: Unset an offset.
+     *
+     * @param mixed $offset
+     * @return void
+     */
+    public function offsetUnset(mixed $offset): void
+    {
+        if ($offset === '' || (is_string($offset) && empty($offset))) {
+            throw new \InvalidArgumentException('Key must be a non-empty string');
+        }
+        unset($this->records[$offset]);
+    }
+
+    /**
+     * Magic setter for property access.
+     *
+     * @param string|int $name Property name
+     * @param mixed $value Value to set
+     * @return void
+     */
+    public function __set(string|int $name, mixed $value): void
+    {
+        if ($name === '' || (is_string($name) && empty($name))) {
+            throw new \InvalidArgumentException('Key must be a non-empty string');
+        }
+        $this->set($name, $value);
+    }
+
+    /**
+     * Check if a property is set.
+     *
+     * @param string|int $name Property name
+     * @return bool
+     */
+    #[Pure]
+    public function __isset(string|int $name): bool
+    {
+        return $this->has($name);
+    }
+
+    /**
+     * Get all keys in the repository.
      *
      * @return array
      */
@@ -177,53 +270,26 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
     }
 
     /**
-     * @return array
-     */
-    public function __debugInfo(): array
-    {
-        return $this->records;
-    }
-
-    /**
-     * Magic method for method chaining with configuration.
+     * Convert the repository to an array.
      *
-     * @param string $name
-     * @param array $arguments
-     * @return mixed
-     */
-    public function __call(string $name, array $arguments)
-    {
-        if (str_starts_with($name, 'get')) {
-            $key = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', substr($name, 3)));
-            return $this->get($key, $arguments[0] ?? null);
-        }
-
-        if (str_starts_with($name, 'set') && count($arguments) === 1) {
-            $key = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', substr($name, 3)));
-            $this->set($key, $arguments[0]);
-            return $this;
-        }
-
-        if (str_starts_with($name, 'has')) {
-            $key = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', substr($name, 3)));
-            return $this->has($key);
-        }
-
-        throw new \BadMethodCallException("Method $name does not exist");
-    }
-
-    /**
      * @return array
      */
     public function toArray(): array
     {
         $result = [];
-        foreach ($this->records as $key => $val) {
-            if ($val instanceof static) {
-                $val = $val->toArray();
-            }
-            $result[$key] = $val;
+        foreach ($this->records as $key => $value) {
+            $result[$key] = $value instanceof self ? $value->toArray() : $value;
         }
         return $result;
+    }
+
+    /**
+     * Provide debug information.
+     *
+     * @return array
+     */
+    public function __debugInfo(): array
+    {
+        return $this->toArray();
     }
 }

@@ -1,6 +1,6 @@
 <?php namespace Sanovskiy\Utility;
 
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Sanovskiy\Interfaces\Patterns\Singleton;
 
 /**
@@ -15,9 +15,9 @@ class DeprecationMonitor implements Singleton
     use \Sanovskiy\Traits\Patterns\Singleton;
 
     /**
-     * @var ?Logger
+     * @var ?LoggerInterface
      */
-    protected ?Logger $logger = null;
+    protected ?LoggerInterface $logger = null;
 
     /**
      * @var array
@@ -30,10 +30,10 @@ class DeprecationMonitor implements Singleton
     protected array $replaceStringsInCallers = [];
 
     /**
-     * @param Logger $logger
+     * @param LoggerInterface $logger
      * @return self
      */
-    public function setLogger(Logger $logger): self
+    public function setLogger(LoggerInterface $logger): self
     {
         $this->logger = $logger;
         return $this;
@@ -104,7 +104,7 @@ class DeprecationMonitor implements Singleton
      */
     protected function sendToLogs(string $key, array $caller): void
     {
-        if (!$this->logger instanceof Logger) {
+        if (!$this->logger instanceof LoggerInterface) {
             return;
         }
         $this->logger->notice($key . ' used.' . ($caller['message'] ? ' ' . $caller['message'] : ''), $caller['callers']);
