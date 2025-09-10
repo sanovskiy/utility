@@ -135,8 +135,11 @@ class RepositoryTest extends TestCase
         $data = ['a' => ['b' => 'value']];
         $repo = new Repository($data);
 
-        // Используем строку с точкой для магического геттера
-        $this->assertEquals('value', $repo->{'a.b'});
+        $this->assertNull($repo->get('a.b.c'));
+
+        $data = ['a' => 'not_an_array'];
+        $repo = new Repository($data);
+        $this->assertNull($repo->get('a.b'));
     }
 
     // Test magic set with dot notation
