@@ -92,6 +92,16 @@ class Strings
      */
     public static function removeCommonPrefix(...$strings): array
     {
+        // Если передан пустой массив, возвращаем пустой массив
+        if (empty($strings)) {
+            return [];
+        }
+
+        // Если передана одна строка, возвращаем её без изменений
+        if (count($strings) === 1) {
+            return [$strings[0]];
+        }
+
         $commonPrefix = array_reduce($strings, function ($prefix, $str) {
             $length = min(strlen($prefix), strlen($str));
             for ($i = 0; $i < $length; $i++) {

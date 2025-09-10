@@ -117,4 +117,23 @@ class StringsTest extends TestCase
         $this->assertEquals('helloWorld', Strings::CamelCase('hello-world', false));
         $this->assertEquals('TestString', Strings::CamelCase('test-string', true));
     }
+
+    public function testRemoveCommonPrefix()
+    {
+        $strings = ['/var/www/html', '/var/www/api', '/var/www/admin'];
+        $result = Strings::removeCommonPrefix(...$strings);
+        $this->assertEquals(['html', 'api', 'admin'], $result);
+
+        // Пустые строки
+        $this->assertEquals(['', ''], Strings::removeCommonPrefix('', ''));
+
+        // Разные строки
+        $this->assertEquals(['abc', 'def'], Strings::removeCommonPrefix('abc', 'def'));
+
+        // Одна строка
+        $this->assertEquals(['test'], Strings::removeCommonPrefix('test'));
+
+        // Пустой массив
+        $this->assertEquals([], Strings::removeCommonPrefix());
+    }
 }
