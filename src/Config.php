@@ -41,10 +41,14 @@ class Config extends Repository
      * @param mixed $arrayOriginal
      * @param mixed $arrayToMerge
      * @return array
-     * @deprecated Use Arrays::smartMerge()
+     * @deprecated Use Arrays::smartMerge() since 2.0. Will be removed in version 3.0.
      */
     public static function mergeArray(mixed $arrayOriginal, mixed $arrayToMerge): array
     {
+        trigger_error(
+            'Method mergeArray() is deprecated and will be removed in version 3.0. Use Arrays::smartMerge() instead.',
+            E_USER_DEPRECATED
+        );
         return Arrays::smartMerge($arrayOriginal,$arrayToMerge);
     }
 }
