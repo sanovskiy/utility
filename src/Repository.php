@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Sanovskiy\Utility;
 
 use JetBrains\PhpStorm\Pure;
+use Sanovskiy\Traits\Countable;
+use Sanovskiy\Traits\Iterator;
 
 /**
  * Class Repository
@@ -12,8 +14,8 @@ use JetBrains\PhpStorm\Pure;
  */
 class Repository implements \ArrayAccess, \Iterator, \Countable
 {
-    use \Sanovskiy\Traits\Iterator;
-    use \Sanovskiy\Traits\Countable;
+    use Iterator;
+    use Countable;
 
     protected array $records = [];
 
@@ -44,7 +46,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
     protected function wrapValue(mixed $value): mixed
     {
         if (is_array($value)) {
-            return new self($value);
+            return new static($value);
         }
         return $value;
     }
@@ -68,7 +70,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
             $current = $this->records;
 
             foreach ($keys as $index => $k) {
-                if ($current instanceof self) {
+                if ($current instanceof static) {
                     return $current->has(implode('.', array_slice($keys, $index)));
                 }
                 if (!is_array($current) || !array_key_exists($k, $current)) {
@@ -109,7 +111,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
             $current = $this->records;
 
             foreach ($keys as $index => $k) {
-                if ($current instanceof self) {
+                if ($current instanceof static) {
                     return $current->get(implode('.', array_slice($keys, $index)), $default);
                 }
                 if (!is_array($current) || !array_key_exists($k, $current)) {
@@ -152,7 +154,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
         foreach ($keys as $index => $k) {
             if (!isset($current[$k])) {
                 $current[$k] = new static([]);
-            } elseif ($current[$k] instanceof self) {
+            } elseif ($current[$k] instanceof static) {
                 $remainingKeys = array_slice($keys, $index + 1);
                 $remainingKeys[] = $lastKey;
                 $current[$k]->set(implode('.', $remainingKeys), $value);
@@ -278,7 +280,7 @@ class Repository implements \ArrayAccess, \Iterator, \Countable
     {
         $result = [];
         foreach ($this->records as $key => $value) {
-            $result[$key] = $value instanceof self ? $value->toArray() : $value;
+            $result[$key] = $value instanceof static ? $value->toArray() : $value;
         }
         return $result;
     }
