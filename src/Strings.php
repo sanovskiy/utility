@@ -27,26 +27,6 @@ class Strings
     }
 
     /**
-     * @param string $string
-     * @param bool $firstLetterCaps
-     * @return string
-     * @deprecated Use NamingStyle::toCamelCase() instead. Will be removed in version 3.0.
-     */
-    public static function CamelCase(string $string, bool $firstLetterCaps = true): string
-    {
-        trigger_error(
-            'Method CamelCase() is deprecated and will be removed in version 3.0. Use NamingStyle::toCamelCase() instead.',
-            E_USER_DEPRECATED
-        );
-
-        $arr = array_map('ucfirst', explode('_', preg_replace('/[_-]/', '_', $string)));
-        if (!$firstLetterCaps) {
-            $arr[0] = strtolower($arr[0]);
-        }
-        return implode('', $arr);
-    }
-
-    /**
      * @param int $num - number
      * @param string $genitive - for (шту)к
      * @param string $plural - for (шту)ки
@@ -92,12 +72,10 @@ class Strings
      */
     public static function removeCommonPrefix(...$strings): array
     {
-        // Если передан пустой массив, возвращаем пустой массив
         if (empty($strings)) {
             return [];
         }
 
-        // Если передана одна строка, возвращаем её без изменений
         if (count($strings) === 1) {
             return [$strings[0]];
         }
