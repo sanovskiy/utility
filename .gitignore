@@ -3,3 +3,4 @@
 /vendor/
 /bin/
 /tmp/
+.phpunit.result.cache
